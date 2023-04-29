@@ -1,19 +1,19 @@
 #pragma once
+
 #include "../common/config.h"
 
 namespace co {
 
-struct StackTraits
-{
-    static stack_malloc_fn_t& MallocFunc();
+struct StackTraits {
+    static stack_malloc_fn_t &MallocFunc();
 
-    static stack_free_fn_t& FreeFunc();
+    static stack_free_fn_t &FreeFunc();
 
-    static int & GetProtectStackPageSize();
+    static int &GetProtectStackPageSize();
 
-    static bool ProtectStack(void* stack, std::size_t size, int pageSize);
+    static bool ProtectStack(void *stack, std::size_t size, int pageSize);
 
-    static void UnprotectStack(void* stack, int pageSize);
+    static void UnprotectStack(void *stack, int pageSize);
 };
 
 } // namespace co
@@ -26,12 +26,19 @@ struct StackTraits
 extern "C"
 {
 
-typedef void* fcontext_t;
-typedef void (FCONTEXT_CALL *fn_t)(intptr_t);
+typedef void *fcontext_t;
 
-intptr_t libgo_jump_fcontext(fcontext_t * ofc, fcontext_t nfc,
-        intptr_t vp, bool preserve_fpu = false);
+struct transfer_t {
+    fcontext_t fctx;
+    void *data;
+};
 
-fcontext_t libgo_make_fcontext(void* stack, std::size_t size, fn_t fn);
+typedef void (*fn_t)(intptr_t);
+
+typedef void (FCONTEXT_CALL *fctx_t)(transfer_t);
+
+transfer_t libgo_jump_fcontext(fcontext_t const to, void *vp);
+
+fcontext_t libgo_make_fcontext(void *sp, std::size_t size, fctx_t fn);
 
 } // extern "C"
