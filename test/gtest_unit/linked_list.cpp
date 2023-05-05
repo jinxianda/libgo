@@ -5,6 +5,7 @@
 #include "coroutine.h"
 #include <boost/thread.hpp>
 #include "gtest_exit.h"
+
 using namespace std;
 using namespace co;
 
@@ -12,16 +13,15 @@ using namespace co;
 TEST(RoutineSyncLinkedList, simple) {}
 #else
 
-struct A : public libgo::LinkedNode
-{
+struct A : public libgo::LinkedNode {
     int v = 0;
 
     A() = default;
+
     explicit A(int _v) : v(_v) {}
 };
 
-TEST(RoutineSyncLinkedList, simple) 
-{
+TEST(RoutineSyncLinkedList, simple) {
     libgo::LinkedList li;
     EXPECT_EQ(li.front(), nullptr);
 
@@ -32,24 +32,41 @@ TEST(RoutineSyncLinkedList, simple)
     }
 
     for (int i = 0; i < c; ++i) {
-        A* a = (A*)li.front();
+        A *a = (A *) li.front();
         EXPECT_EQ(a->v, i);
         li.unlink(a);
         delete a;
     }
-    
+
     EXPECT_EQ(li.front(), nullptr);
 }
 
+TEST(RoutineSyncLinkedList, unlink_head) {
+    libgo::LinkedList li;
+    EXPECT_EQ(li.front(), nullptr);
+    libgo::LinkedNode* h = new A(0);
+    li.push(h);
+    EXPECT_EQ(li.front()->prev, nullptr);
+    EXPECT_EQ(li.front()->next, nullptr);
+    EXPECT_EQ(li.front(), h);
+    libgo::LinkedNode* e = new A(1);
+    li.push(e);
+    EXPECT_EQ(li.front()->prev, nullptr);
+    EXPECT_EQ(li.front()->next, e);
+    EXPECT_EQ(li.front(), h);
+    li.unlink(h);
+    EXPECT_EQ(li.front()->prev, nullptr);
+    EXPECT_EQ(li.front()->next, nullptr);
+    EXPECT_EQ(li.front(), e);
+}
 
-TEST(RoutineSyncLinkedList, random_erase) 
-{
+TEST(RoutineSyncLinkedList, random_erase) {
     libgo::LinkedList li;
     EXPECT_EQ(li.front(), nullptr);
 
     const int c = 100;
 
-    std::vector<A*> vec;
+    std::vector<A *> vec;
 
     for (int i = 0; i < c; ++i) {
         vec.push_back(new A(i));
@@ -57,7 +74,7 @@ TEST(RoutineSyncLinkedList, random_erase)
     }
 
     for (int i = 0; i < 10; ++i) {
-        A* a = vec.back();
+        A *a = vec.back();
         vec.pop_back();
         li.unlink(a);
         delete a;
@@ -65,11 +82,12 @@ TEST(RoutineSyncLinkedList, random_erase)
 
     std::random_shuffle(vec.begin(), vec.end());
 
-    for (A* a : vec) {
+    for (A *a: vec) {
         li.unlink(a);
         delete a;
     }
-    
+
     EXPECT_EQ(li.front(), nullptr);
 }
+
 #endif

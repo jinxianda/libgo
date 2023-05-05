@@ -125,8 +125,8 @@ public:
         }
 
         if (head_ == node) {
-            head_->prev = nullptr;
             head_ = head_->next;
+            head_->prev = nullptr;
             node->prev = node->next = nullptr;
             return true;
         }
